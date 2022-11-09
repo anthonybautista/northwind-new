@@ -1,6 +1,7 @@
 // from https://www.yogihosting.com/aspnet-core-identity-password-reset/
 
 using System.Net.Mail;
+
  
 namespace Northwind.Models
 {
@@ -17,8 +18,9 @@ namespace Northwind.Models
             mailMessage.Body = link;
  
             SmtpClient client = new SmtpClient();
-            client.Credentials = new System.Net.NetworkCredential("northwind-recovery@gmail.com", "B@nanas1");
+            client.Credentials = new System.Net.NetworkCredential("northwind.recovery@gmail.com", "adsaemzdteptamig");
             client.Host = "smtp.gmail.com";
+            client.EnableSsl = true;
             client.Port = 587;
  
             try
