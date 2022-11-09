@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Northwind.Models;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace Northwind.Controllers
 {
@@ -47,6 +49,46 @@ namespace Northwind.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        // code from https://www.yogihosting.com/aspnet-core-identity-password-reset/
+ 
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+ 
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ForgotPassword([Required]string email)
+        {
+            if (!ModelState.IsValid)
+                return View();
+ 
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+ 
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var link = Url.Action("ResetPassword", "Account", new { token, email = user.Email }, Request.Scheme);
+ 
+            EmailHelper emailHelper = new EmailHelper();
+            bool emailResponse = emailHelper.SendEmailPasswordReset(user.Email, link);
+ 
+            if (emailResponse)
+                return RedirectToAction("ForgotPasswordConfirmation");
+            else
+            {
+                // log email failed 
+            }
+            return View();
+        }
+ 
+        [AllowAnonymous]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
         }
 
         public ViewResult AccessDenied() => View();
