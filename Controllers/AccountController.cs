@@ -58,7 +58,7 @@ namespace Northwind.Controllers
         {
             return View();
         }
- 
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([Required]string email)
@@ -92,5 +92,39 @@ namespace Northwind.Controllers
         }
 
         public ViewResult AccessDenied() => View();
+        
+        [AllowAnonymous]
+        public IActionResult ResetPassword(string token, string email)
+        {
+            var model = new ResetPassword { Token = token, Email = email };
+            return View(model);
+        }
+        
+        [HttpPost]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(ResetPassword resetPassword)
+        {
+            if (!ModelState.IsValid)
+                return View(resetPassword);
+ 
+            var user = await _userManager.FindByEmailAsync(resetPassword.Email);
+            if (user == null)
+                RedirectToAction("ResetPasswordConfirmation");
+ 
+            var resetPassResult = await _userManager.ResetPasswordAsync(user, resetPassword.Token, resetPassword.Password);
+            if (!resetPassResult.Succeeded)
+            {
+                foreach (var error in resetPassResult.Errors)
+                    ModelState.AddModelError(error.Code, error.Description);
+                return View();
+            }
+ 
+            return RedirectToAction("ResetPasswordConfirmation");
+        }
+ 
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
+        }
     }
 }
